@@ -13,7 +13,6 @@
 	  "type": "image/png"
 	}
   ],
-  // The theme_color defines the color of the browser's toolbar when the web app is launched.
   "theme_color": "#ED9BC4",
   "background_color": "#000000",
   "display": "minimal-ui",
