@@ -26,6 +26,7 @@ function generateButtons() {
 
         button.addEventListener("pointerdown", (event) => startPress(event, sound, button));
         button.addEventListener("pointerup", (event) => endPress(event, sound, button));
+        button.addEventListener("contextmenu", (e) => e.preventDefault());
 
         soundboard.appendChild(button);
     });
