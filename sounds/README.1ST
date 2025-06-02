@@ -1,0 +1,4 @@
+Use the following naming convention for your sound files:  
+    `GF_##_TITLE.mp3`  
+    - `##`: Determines the order of the buttons (e.g., 01, 02, 03, ...)
+    - `TITLE`: Determines the title of the buttons (e.g., TOXIC, DANGER, ABYSS, ...)

@@ -1,0 +1,74 @@
+@font-face {
+    font-family: FUCXEDCAPS;
+    src: url('fonts/FUCXEDCAPSLATIN.OTF');
+}
+@font-face {
+    font-family: Karla;
+    src: url('fonts/Karla.ttf');
+}
+* {
+    font-family: FUCXEDCAPS;
+    font-size: 5.5vw;
+    margin: 1%;
+}
+body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background-color: #ED9BC4;
+}
+img {
+    width: 48%;
+}
+button {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    background-color: #000000;
+    color: #ffffff;
+    padding: 8%;
+    border: none;
+    cursor: pointer;
+    border-radius: 16px;
+    width: 48%;
+    height: 100%;
+    transition: background-color 0.3s;
+}
+button:hover {
+    color: #000000;
+    background-color: #FFC11E;
+}
+.button-row {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+.play-all-button {
+    width: 96%;
+}
+.playing {
+    background-color: #14AA37;
+    color: #ffffff;
+}
+.playing-all {
+    background-color: #14AA37;
+    color: #ffffff;
+}
+.tekst {
+    font-family: Karla;
+    font-size: 3vw;
+    text-align: center;
+    max-width: 96%;
+}
+.link {
+    font-family: Karla;
+    font-size: 3vw;
+    color: #75d0f1;
+    text-align: center;
+    max-width: 96%;
+}
+.link:hover {
+    background-color: #cce7ff;
+}
