@@ -61,14 +61,15 @@ button:hover {
     font-size: 3vw;
     text-align: center;
     max-width: 96%;
+  white-space: nowrap;
 }
-.link {
+.info-link {
     font-family: Karla;
     font-size: 3vw;
     color: #75d0f1;
     text-align: center;
     max-width: 96%;
 }
-.link:hover {
+.info-link:hover {
     background-color: #cce7ff;
 }

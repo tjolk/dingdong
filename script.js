@@ -8,6 +8,7 @@ let playingAll = false;
 let index = 0;
 let pressTimer = null;
 let longPressTriggered = false;
+let lastTap = 0;
 
 fetch('getSounds.php')
     .then(response => response.json())
@@ -26,6 +27,7 @@ function generateButtons() {
 
         button.addEventListener("pointerdown", (event) => startPress(event, sound, button));
         button.addEventListener("pointerup", (event) => endPress(event, sound, button));
+        button.addEventListener("contextmenu", (e) => e.preventDefault());
 
         soundboard.appendChild(button);
     });
@@ -69,11 +71,22 @@ function toggleSound(button, soundName) {
 }
 
 function startPress(event, soundName, button) {
+    const currentTime = new Date().getTime();
+    const tapLength = currentTime - lastTap;
+    if (tapLength < 400 && tapLength > 0) {
+        // Double-tap detected
+        downloadSound(soundName);
+        lastTap = 0;
+        event.preventDefault();
+        return;
+    }
+    lastTap = currentTime;
+    // Single tap: do nothing, wait for endPress
     longPressTriggered = false;
     pressTimer = setTimeout(() => {
-        downloadSound(soundName);
+        // Optionally, you can show a tooltip here for download instructions
         longPressTriggered = true;
-    }, 1500);
+    }, 500);
 }
 
 function endPress(event, soundName, button) {
