@@ -1,18 +1,20 @@
 <?php
 header('Content-Type: application/json');
 
-$soundDir = 'sounds/';
+$soundDir = __DIR__ . '/sounds/';
 $sounds = [];
 
-foreach (scandir($soundDir) as $file) {
-    if (pathinfo($file, PATHINFO_EXTENSION) === 'mp3') {
-        $filename = pathinfo($file, PATHINFO_FILENAME);
-        // Verwijder 'GF_' prefix als je dat wilt
-        if (str_starts_with($filename, 'GF_')) {
-            $filename = substr($filename, 3);
-        }
-        $sounds[] = $filename;
+$files = is_dir($soundDir) ? scandir($soundDir) : [];
+
+foreach ($files as $file) {
+    if (strtolower(pathinfo($file, PATHINFO_EXTENSION)) !== 'mp3') {
+        continue;
     }
+    // Titel: zonder extensie, zonder 'GF_' prefix en zonder volgnummer ('01_')
+    $title = pathinfo($file, PATHINFO_FILENAME);
+    $title = preg_replace('/^GF_/', '', $title);
+    $title = preg_replace('/^\d+_/', '', $title);
+    $sounds[] = ['file' => $file, 'title' => $title];
 }
 
 echo json_encode($sounds);
