@@ -2,9 +2,6 @@ const soundboard = document.getElementById('soundboard');
 const audio = document.getElementById("audio");
 const playAllButton = document.querySelector(".play-all-button");
 
-const DOUBLE_TAP_MS = 400;
-const LONG_PRESS_MS = 500;
-
 let sounds = [];
 let buttons = [];
 let currentIndex = -1;
@@ -37,35 +34,14 @@ function generateButtons() {
         button.className = "sound-button";
         button.innerText = sound.title;
         button.setAttribute("aria-label", `Speel geluid: ${sound.title}`);
-        button.title = "Tik om af te spelen of te stoppen. Dubbeltik om te downloaden.";
+        button.title = "Tik om af te spelen of te stoppen.";
 
-        let lastTap = 0;
-        let pressTimer = null;
-        let longPress = false;
-
-        button.addEventListener("pointerdown", () => {
-            longPress = false;
-            clearTimeout(pressTimer);
-            pressTimer = setTimeout(() => { longPress = true; }, LONG_PRESS_MS);
-        });
-        button.addEventListener("pointercancel", () => clearTimeout(pressTimer));
-        button.addEventListener("pointerup", () => {
-            clearTimeout(pressTimer);
-            if (longPress) {
-                return;
-            }
-            const now = Date.now();
-            if (lastTap && now - lastTap < DOUBLE_TAP_MS) {
-                // Dubbeltik op dezelfde knop: downloaden, afspeelstatus ongemoeid laten
-                lastTap = 0;
-                downloadSound(sound);
-                return;
-            }
-            lastTap = now;
+        button.addEventListener("click", () => {
+            const wasPlaying = currentIndex === i;
             if (playingAll) {
                 stopAll();
             }
-            if (currentIndex === i) {
+            if (wasPlaying) {
                 stopAudio();
             } else {
                 playSound(i);
@@ -149,15 +125,6 @@ function playAllSounds() {
     playAllButton.innerText = "Stop All";
     allIndex = 0;
     playSound(0);
-}
-
-function downloadSound(sound) {
-    const link = document.createElement("a");
-    link.href = soundUrl(sound);
-    link.download = sound.file;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
 }
 
 audio.addEventListener("ended", () => handleEnded());

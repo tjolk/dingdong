@@ -1,7 +1,7 @@
 # Guerrilla Fashion Soundboard
 
 ## Description
-This project is a web application that serves as a soundboard for Guerrilla Fashion. It allows users to play sounds and download them through an interactive interface.
+This project is a web application that serves as a soundboard for Guerrilla Fashion. It allows users to play sounds through an interactive interface.
 The web application is intended for mobile use. It will work on desktop, but the layout isn't intended for it.
 It can installed as a web app on Android/iPhone.
 
@@ -25,8 +25,7 @@ It can installed as a web app on Android/iPhone.
         - `TITLE`: Determines the title of the buttons (e.g., TOXIC, DANGER, ABYSS, ...)
 
 ## Usage
-- Click on the buttons to play sounds.
-- Hold the buttons to download the sounds.
+- Click on the buttons to play or stop sounds.
 - Use the "Play All" button to play all sounds in sequence.
 
 ## Dependencies
