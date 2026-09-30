@@ -3,151 +3,134 @@ const audio = document.getElementById("audio");
 const playAllButton = document.querySelector(".play-all-button");
 
 let sounds = [];
-let currentPlayingButton = null;
+let buttons = [];
+let currentIndex = -1;
 let playingAll = false;
-let index = 0;
-let pressTimer = null;
-let longPressTriggered = false;
-let lastTap = 0;
+let allIndex = -1;
 
 fetch('getSounds.php')
-    .then(response => response.json())
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+        }
+        return response.json();
+    })
     .then(data => {
         sounds = data;
         generateButtons();
+    })
+    .catch(error => {
+        console.error("Geluiden konden niet worden geladen:", error);
+        soundboard.innerText = "Geluiden konden niet worden geladen.";
     });
 
+function soundUrl(sound) {
+    return `sounds/${encodeURIComponent(sound.file)}`;
+}
+
 function generateButtons() {
-    sounds.forEach(sound => {
+    sounds.forEach((sound, i) => {
         const button = document.createElement('button');
         button.className = "sound-button";
-        button.innerText = sound.substring(3);
-        button.setAttribute("aria-label", `Speel geluid: ${sound}`);
-        button.title = "Tik om af te spelen of te stoppen. Houd ingedrukt om te downloaden.";
+        button.innerText = sound.title;
+        button.setAttribute("aria-label", `Speel geluid: ${sound.title}`);
+        button.title = "Tik om af te spelen of te stoppen.";
 
-        button.addEventListener("pointerdown", (event) => startPress(event, sound, button));
-        button.addEventListener("pointerup", (event) => endPress(event, sound, button));
+        button.addEventListener("click", () => {
+            const wasPlaying = currentIndex === i;
+            if (playingAll) {
+                stopAll();
+            }
+            if (wasPlaying) {
+                stopAudio();
+            } else {
+                playSound(i);
+            }
+        });
         button.addEventListener("contextmenu", (e) => e.preventDefault());
 
+        buttons.push(button);
         soundboard.appendChild(button);
     });
 }
 
-function toggleSound(button, soundName) {
-    const soundSrc = `sounds/GF_${soundName}.mp3`;
-
-    if (audio.src.includes(soundName) && !audio.paused) {
-        audio.pause();
-        audio.currentTime = 0;
-        button.innerText = soundName.substring(3);
+function resetCurrentButton() {
+    if (currentIndex >= 0) {
+        const button = buttons[currentIndex];
+        button.innerText = sounds[currentIndex].title;
         button.classList.remove("playing");
-        currentPlayingButton = null;
-        audio.src = "";
-        return;
     }
+    currentIndex = -1;
+}
 
-    if (currentPlayingButton) {
-        currentPlayingButton.innerText = currentPlayingButton.dataset.originalText;
-        currentPlayingButton.classList.remove("playing");
-    }
+function stopAudio() {
+    audio.pause();
+    audio.currentTime = 0;
+    resetCurrentButton();
+}
 
-    audio.src = soundSrc;
-    audio.load();
+// Wordt direct vanuit de gebruikersactie aangeroepen, zodat iOS het afspelen toestaat.
+function playSound(i) {
+    resetCurrentButton();
 
-    const expectedSrc = audio.src;
+    currentIndex = i;
+    buttons[i].innerText = "Stop";
+    buttons[i].classList.add("playing");
 
-    audio.oncanplaythrough = () => {
-        if (audio.src === expectedSrc) {
-            audio.play().catch(error => {
-                console.warn("Audio kon niet worden afgespeeld:", error);
-            });
+    audio.src = soundUrl(sounds[i]);
+    audio.play().catch(error => {
+        // AbortError: een nieuwe src/pause onderbrak deze play(); dat is bedoeld.
+        if (error.name === "AbortError" || currentIndex !== i) {
+            return;
         }
-    };
-
-    button.dataset.originalText = button.innerText;
-    button.innerText = "Stop";
-    button.classList.add("playing");
-    currentPlayingButton = button;
+        console.warn("Audio kon niet worden afgespeeld:", error);
+        handleEnded();
+    });
 }
 
-function startPress(event, soundName, button) {
-    const currentTime = new Date().getTime();
-    const tapLength = currentTime - lastTap;
-    if (tapLength < 400 && tapLength > 0) {
-        // Double-tap detected
-        downloadSound(soundName);
-        lastTap = 0;
-        event.preventDefault();
-        return;
-    }
-    lastTap = currentTime;
-    // Single tap: do nothing, wait for endPress
-    longPressTriggered = false;
-    pressTimer = setTimeout(() => {
-        // Optionally, you can show a tooltip here for download instructions
-        longPressTriggered = true;
-    }, 500);
-}
-
-function endPress(event, soundName, button) {
-    clearTimeout(pressTimer);
-    if (!longPressTriggered) {
-        toggleSound(button, soundName);
+function handleEnded() {
+    resetCurrentButton();
+    if (playingAll) {
+        playNext();
     }
 }
 
-function downloadSound(name) {
-    const link = document.createElement("a");
-    link.href = `sounds/GF_${name}.mp3`;
-    link.download = `GF_${name}.mp3`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+function playNext() {
+    allIndex++;
+    if (allIndex < sounds.length) {
+        playSound(allIndex);
+    } else {
+        stopAll();
+    }
+}
+
+function stopAll() {
+    playingAll = false;
+    playAllButton.innerText = "Play All";
+    playAllButton.classList.remove("playing-all");
+    stopAudio();
 }
 
 function playAllSounds() {
     if (playingAll) {
-        playingAll = false;
-        audio.pause();
-        audio.currentTime = 0;
-        playAllButton.innerText = "Play All";
-        playAllButton.classList.remove("playing-all");
-        audio.onended = null;
-    } else {
-        if (currentPlayingButton) {
-            currentPlayingButton.innerText = currentPlayingButton.dataset.originalText;
-            currentPlayingButton.classList.remove("playing");
-            currentPlayingButton = null;
-        }
-
-        playingAll = true;
-        playAllButton.classList.add("playing-all");
-        index = 0;
-
-        function playNextSound() {
-            if (playingAll && index < sounds.length) {
-                audio.src = `sounds/GF_${sounds[index++]}.mp3`;
-                audio.load();
-                audio.oncanplaythrough = () => {
-                    audio.play();
-                };
-            } else {
-                playingAll = false;
-                playAllButton.innerText = "Play All";
-                playAllButton.classList.remove("playing-all");
-            }
-        }
-
-        audio.onended = playNextSound;
-        playAllButton.innerText = "Stop All";
-        playNextSound();
+        stopAll();
+        return;
     }
+    if (!sounds.length) {
+        return;
+    }
+    stopAudio();
+    playingAll = true;
+    playAllButton.classList.add("playing-all");
+    playAllButton.innerText = "Stop All";
+    allIndex = 0;
+    playSound(0);
 }
 
-audio.addEventListener("ended", () => {
-    if (currentPlayingButton) {
-        currentPlayingButton.innerText = currentPlayingButton.dataset.originalText;
-        currentPlayingButton.classList.remove("playing");
-        currentPlayingButton = null;
+audio.addEventListener("ended", () => handleEnded());
+audio.addEventListener("error", () => {
+    if (audio.getAttribute("src")) {
+        console.warn("Audiobestand kon niet worden geladen:", audio.src);
+        handleEnded();
     }
 });
